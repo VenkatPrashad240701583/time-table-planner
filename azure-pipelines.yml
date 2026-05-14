@@ -4,10 +4,28 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
-steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '3.10'
+jobs:
+- deployment: DeployPythonApp
+  displayName: "Deploy Python App"
 
-- script: pip install -r requirements.txt
-  displayName: 'Install dependencies'
+  environment: deploymentvm
+
+  strategy:
+    runOnce:
+      deploy:
+        steps:
+
+        - checkout: self
+
+        - task: UsePythonVersion@0
+          inputs:
+            versionSpec: '3.10'
+
+        - script: |
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+          displayName: 'Install dependencies'
+
+        - script: |
+            echo "Deploying application..."
+          displayName: 'Deploy step'
