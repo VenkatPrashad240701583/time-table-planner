@@ -37,6 +37,7 @@ def login_page(request: Request, role: str = "student", error: str = None):
 
 @app.post("/login")
 def login_post(
+    request: Request,
     response: Response,
     email: str = Form(...),
     password: str = Form(...),
@@ -51,7 +52,7 @@ def login_post(
 
     if not user:
         return templates.TemplateResponse("login.html", {
-            "request": {},
+            "request": request,
             "role": role,
             "error": "Invalid email or password."
         })
