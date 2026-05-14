@@ -5,31 +5,25 @@ pool:
   name: Default
 
 steps:
-- checkout: self
-
 - script: |
+    whoami
+    pwd
+    python3 --version
+
     APP_DIR="$HOME/fastapi-app"
 
-    echo "Creating app directory..."
     mkdir -p $APP_DIR
 
-    echo "Copying project files..."
     rsync -av --delete $(Build.SourcesDirectory)/ $APP_DIR/
 
     cd $APP_DIR
 
-    echo "Creating virtual environment..."
+    ls -la
+
     python3 -m venv venv
 
-    echo "Installing dependencies..."
     ./venv/bin/pip install --upgrade pip
     ./venv/bin/pip install -r requirements.txt
 
-    echo "Stopping old app..."
-    pkill -f "python run.py" || true
-
-    echo "Starting FastAPI app..."
-    nohup ./venv/bin/python run.py > app.log 2>&1 &
-
-    echo "Deployment completed!"
-  displayName: 'Deploy FastAPI App'
+    ./venv/bin/python run.py
+  displayName: 'Debug Deployment'
