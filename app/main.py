@@ -33,7 +33,7 @@ def get_db():
 
 @app.get("/login", response_class=HTMLResponse)
 def login_page(request: Request, role: str = "student", error: str = None):
-    return templates.TemplateResponse("login.html", {"request": request, "role": role, "error": error})
+    return templates.TemplateResponse(request, "login.html", {"role": role, "error": error})
 
 @app.post("/login")
 def login_post(
@@ -51,8 +51,7 @@ def login_post(
     ).first()
 
     if not user:
-        return templates.TemplateResponse("login.html", {
-            "request": request,
+        return templates.TemplateResponse(request, "login.html", {
             "role": role,
             "error": "Invalid email or password."
         })
@@ -76,7 +75,7 @@ def logout():
 
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request, "index.html", {})
 
 
 @app.get("/admin", response_class=HTMLResponse)
@@ -90,8 +89,7 @@ def admin_page(request: Request, db: Session = Depends(get_db)):
     timeslots = db.query(models.TimeSlot).all()
     timetable = db.query(models.Timetable).all()
 
-    return templates.TemplateResponse("admin.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "admin.html", {
         "teachers": teachers,
         "subjects": subjects,
         "classes": classes,
@@ -132,8 +130,7 @@ def student_page(request: Request, db: Session = Depends(get_db)):
         for c in classes_orm
     ]
 
-    return templates.TemplateResponse("student.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "student.html", {
         "timetable": timetable,
         "classes": classes_orm,
         "classes_json": classes_json,
@@ -152,8 +149,7 @@ def teacher_page(request: Request, db: Session = Depends(get_db)):
     # Only get this teacher's availability
     availability = db.query(models.TeacherAvailability).filter(models.TeacherAvailability.teacher_id == int(user_id)).all()
     
-    return templates.TemplateResponse("teacher.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "teacher.html", {
         "timeslots": timeslots,
         "availability": availability,
         "teacher_id": user_id
