@@ -21,18 +21,15 @@ steps:
     echo "Creating virtual environment..."
     python3 -m venv venv
 
-    echo "Activating virtual environment..."
-    source venv/bin/activate
-
     echo "Installing dependencies..."
-    pip install --upgrade pip
-    pip install -r requirements.txt
+    ./venv/bin/pip install --upgrade pip
+    ./venv/bin/pip install -r requirements.txt
 
     echo "Stopping old app..."
     pkill -f "python run.py" || true
 
     echo "Starting FastAPI app..."
-    nohup python run.py > app.log 2>&1 &
+    nohup ./venv/bin/python run.py > app.log 2>&1 &
 
     echo "Deployment completed!"
   displayName: 'Deploy FastAPI App'
