@@ -71,7 +71,7 @@ def logout():
     return res
 
 
-# ---------------- PAGE ROUTES ---------------- #
+# ---------------- PAGE ROUTES ----------------
 
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
