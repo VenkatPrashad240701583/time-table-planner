@@ -7,15 +7,32 @@ pool:
 steps:
 - checkout: self
 
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '3.10'
-
 - script: |
-    python -m pip install --upgrade pip
+    APP_DIR="$HOME/fastapi-app"
+
+    echo "Creating app directory..."
+    mkdir -p $APP_DIR
+
+    echo "Copying project files..."
+    rsync -av --delete $(Build.SourcesDirectory)/ $APP_DIR/
+
+    cd $APP_DIR
+
+    echo "Creating virtual environment..."
+    python3 -m venv venv
+
+    echo "Activating virtual environment..."
+    source venv/bin/activate
+
+    echo "Installing dependencies..."
+    pip install --upgrade pip
     pip install -r requirements.txt
-  displayName: 'Install dependencies'
 
-- script: |
-    echo "Deploying application..."
-  displayName: 'Deploy step'
+    echo "Stopping old app..."
+    pkill -f "python run.py" || true
+
+    echo "Starting FastAPI app..."
+    nohup python run.py > app.log 2>&1 &
+
+    echo "Deployment completed!"
+  displayName: 'Deploy FastAPI App'
