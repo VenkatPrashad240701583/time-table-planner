@@ -4,26 +4,32 @@ trigger:
 pool:
   name: Default
 
-steps:
-- script: |
-    whoami
-    pwd
-    python3 --version
+jobs:
+- job: Deploy
+  timeoutInMinutes: 0
 
-    APP_DIR="$HOME/fastapi-app"
+  steps:
+  - script: |
+      whoami
+      pwd
+      python3 --version
 
-    mkdir -p $APP_DIR
+      APP_DIR="$HOME/fastapi-app"
 
-    rsync -av --delete $(Build.SourcesDirectory)/ $APP_DIR/
+      mkdir -p $APP_DIR
 
-    cd $APP_DIR
+      rsync -av --delete $(Build.SourcesDirectory)/ $APP_DIR/
 
-    ls -la
+      cd $APP_DIR
 
-    python3 -m venv venv
+      ls -la
 
-    ./venv/bin/pip install --upgrade pip
-    ./venv/bin/pip install -r requirements.txt
+      python3 -m venv venv
 
-    ./venv/bin/python run.py
-  displayName: 'Debug Deployment'
+      ./venv/bin/pip install --upgrade pip
+      ./venv/bin/pip install -r requirements.txt
+
+      pkill -f "python run.py" || true
+
+      nohup ./venv/bin/python run.py > app.log 2>&1 &
+    displayName: 'Debug Deployment'
