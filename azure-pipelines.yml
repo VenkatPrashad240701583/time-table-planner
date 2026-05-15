@@ -29,7 +29,5 @@ jobs:
       ./venv/bin/pip install --upgrade pip
       ./venv/bin/pip install -r requirements.txt
 
-      pkill -f "python run.py" || true
-
-      nohup ./venv/bin/python run.py > app.log 2>&1 &
+      ./venv/bin/python run.py
     displayName: 'Debug Deployment'
