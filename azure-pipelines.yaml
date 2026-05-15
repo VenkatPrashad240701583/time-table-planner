@@ -29,5 +29,5 @@ jobs:
       ./venv/bin/pip install --upgrade pip
       ./venv/bin/pip install -r requirements.txt
 
-      ./venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+      nohup ./venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 > app.log 2>&1 &
     displayName: 'Debug Deployment'
