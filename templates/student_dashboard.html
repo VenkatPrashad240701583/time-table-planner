@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        body { padding: 40px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .card { padding: 30px; margin-bottom: 30px; text-align: center; }
+        button { padding: 15px 30px; cursor: pointer; color: white; background: var(--primary); border: none; font-weight: bold; border-radius: var(--border-radius-sm); font-size: 18px; }
+        .neu-btn { box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light); transition: var(--transition); }
+        .neu-btn:active { box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light); }
+        .btn-danger { background: var(--danger); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Student Dashboard</h1>
+        <div>
+            <button class="neu-btn" onclick="window.location.href='/profile'" style="padding: 10px 20px; font-size:14px; margin-right: 10px;">My Profile</button>
+            <button class="neu-btn btn-danger" onclick="logout()" style="padding: 10px 20px; font-size:14px;">Logout</button>
+        </div>
+    </div>
+
+    <div class="neu card" id="portal-card">
+        <h2>Timetable Selection Portal</h2>
+        <p id="portal-status-text">Checking status...</p>
+        <button class="neu-btn" id="enter-portal-btn" style="display: none;" onclick="window.location.href='/timetable-selection'">Enter Selection Portal</button>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/';
+
+        async function checkPortalStatus() {
+            try {
+                const res = await fetch('/api/student/portal-status', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.status === 401 || res.status === 403) logout();
+                
+                const data = await res.json();
+                if (data.is_open) {
+                    document.getElementById('portal-status-text').innerText = "The selection portal is currently OPEN.";
+                    document.getElementById('enter-portal-btn').style.display = "inline-block";
+                } else {
+                    document.getElementById('portal-status-text').innerText = "The selection portal is CLOSED. You can view your finalized timetable here (Coming soon).";
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/';
+        }
+
+        checkPortalStatus();
+    </script>
+</body>
+</html>

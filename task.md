@@ -1,0 +1,38 @@
+# Smart Course and Timetable Selection System - Task List
+
+- [ ] Project Setup & Cleanup
+    - [ ] Clean up unnecessary old files while preserving `static/css/style.css`
+    - [ ] Update `requirements.txt`
+    - [ ] Create directory structure (`app/core`, `app/routers`, `app/models`, `app/schemas`, `app/crud`, `app/services`, `static`, `templates`)
+- [ ] Database Setup
+    - [ ] Configure SQLite with WAL mode (`app/database.py`)
+    - [ ] Define SQLAlchemy Models (`app/models.py`)
+    - [ ] Create database initialization script or lifespan event
+- [ ] Backend Implementation - Core & Auth
+    - [ ] Implement Pydantic Schemas (`app/schemas.py`)
+    - [ ] Implement Security & Auth logic (`app/core/security.py`, `app/core/config.py`, `app/dependencies.py`)
+    - [ ] Create Auth Router (`app/routers/auth.py`)
+- [ ] Backend Implementation - Admin Module
+    - [ ] Create Admin Router (`app/routers/admin.py`)
+    - [ ] Endpoints for User, Classroom, Semester, Subject management
+    - [ ] Endpoints for Timetable Slot configuration (50m/80m slots, 8am-5pm)
+    - [ ] Endpoint to Reset Semester Allocations
+- [ ] Backend Implementation - Teacher Module
+    - [ ] Create Teacher Router (`app/routers/teacher.py`)
+    - [ ] Endpoints to view schedule and student list
+- [ ] Backend Implementation - Student & Realtime Module
+    - [ ] Create Student Router (`app/routers/student.py`)
+    - [ ] Endpoint to view assigned subjects and available sections
+    - [ ] Endpoint to make selections (with conflict and capacity validation)
+    - [ ] Create Realtime Router (`app/routers/realtime.py`)
+    - [ ] Implement SSE Connection Manager for global broadcast on selection page
+- [ ] Frontend Implementation
+    - [ ] Setup `templates/index.html` (Login/Signup) utilizing Neumorphism CSS
+    - [ ] Setup `templates/admin_dashboard.html`
+    - [ ] Setup `templates/teacher_dashboard.html`
+    - [ ] Setup `templates/student_dashboard.html` (Finalized Timetable)
+    - [ ] Setup `templates/timetable_selection.html` (Selection Portal with SSE integration)
+- [ ] Final Review & Polish
+    - [ ] Test End-to-End flow
+    - [ ] Ensure clash detection and DB locks are avoided
+    - [ ] Ensure neat and responsive UI

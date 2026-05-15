@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        body { padding: 40px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .card { padding: 30px; margin-bottom: 30px; }
+        button { padding: 10px 20px; cursor: pointer; color: white; background: var(--primary); border: none; font-weight: bold; border-radius: var(--border-radius-sm); }
+        .btn-danger { background: var(--danger); }
+        .neu-btn { box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light); transition: var(--transition); }
+        .neu-btn:active { box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--shadow-dark); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Teacher Dashboard</h1>
+        <div>
+            <button class="neu-btn" onclick="window.location.href='/profile'" style="margin-right: 10px;">My Profile</button>
+            <button class="neu-btn btn-danger" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="neu card">
+        <h2>My Schedule</h2>
+        <table id="schedule-table">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Section</th>
+                    <th>Day</th>
+                    <th>Time</th>
+                    <th>Room</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Populated via JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="neu card" id="students-card" style="display: none;">
+        <h2>Enrolled Students</h2>
+        <ul id="students-list"></ul>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/';
+
+        const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+        async function fetchSchedule() {
+            const res = await fetch('/api/teacher/schedule', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.status === 401 || res.status === 403) logout();
+            
+            const schedule = await res.json();
+            const tbody = document.querySelector('#schedule-table tbody');
+            tbody.innerHTML = '';
+            
+            if (schedule.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6">No classes assigned.</td></tr>';
+                return;
+            }
+
+            schedule.forEach(slot => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${slot.subject}</td>
+                        <td>${slot.section_name}</td>
+                        <td>${days[slot.day]}</td>
+                        <td>${slot.start} - ${slot.end}</td>
+                        <td>${slot.room}</td>
+                        <td>
+                            <button class="neu-btn" onclick="viewStudents(${slot.section_id})">View Students</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function viewStudents(sectionId) {
+            const res = await fetch(`/api/teacher/sections/${sectionId}/students`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const students = await res.json();
+            
+            const card = document.getElementById('students-card');
+            const list = document.getElementById('students-list');
+            card.style.display = 'block';
+            list.innerHTML = '';
+            
+            if (students.length === 0) {
+                list.innerHTML = '<li>No students enrolled yet.</li>';
+                return;
+            }
+            
+            students.forEach(st => {
+                list.innerHTML += `<li>${st.roll_number} - ${st.email}</li>`;
+            });
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/';
+        }
+
+        fetchSchedule();
+    </script>
+</body>
+</html>

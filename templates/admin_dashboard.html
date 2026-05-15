@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        body { padding: 40px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .card { padding: 30px; margin-bottom: 30px; }
+        button { padding: 10px 20px; cursor: pointer; color: white; background: var(--primary); border: none; font-weight: bold; border-radius: var(--border-radius-sm); }
+        .btn-danger { background: var(--danger); }
+        .neu-btn { box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light); transition: var(--transition); }
+        .neu-btn:active { box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--shadow-dark); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Admin Dashboard</h1>
+        <div>
+            <button class="neu-btn" onclick="window.location.href='/admin-setup'">Entity Setup</button>
+            <button class="neu-btn btn-danger" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="neu card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>Semester Management</h2>
+            <div>
+                <input type="text" id="new-semester-name" placeholder="Semester Name (e.g. Fall 2026)" style="padding: 10px; border-radius: var(--border-radius-sm); border: none; box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light); outline: none;">
+                <button class="neu-btn" onclick="createSemester()">Create Semester</button>
+            </div>
+        </div>
+        <table id="semesters-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Portal Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Populated via JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/';
+
+        async function fetchStats() {
+            const res = await fetch('/api/admin/dashboard-stats', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.status === 401 || res.status === 403) {
+                logout();
+            }
+            const data = await res.json();
+            
+            const tbody = document.querySelector('#semesters-table tbody');
+            tbody.innerHTML = '';
+            data.semesters.forEach(s => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${s.id}</td>
+                        <td>${s.name}</td>
+                        <td>${s.is_portal_open ? 'Open' : 'Closed'}</td>
+                        <td>
+                            <button class="neu-btn" onclick="togglePortal(${s.id}, ${!s.is_portal_open})">
+                                ${s.is_portal_open ? 'Close Portal' : 'Open Portal'}
+                            </button>
+                            <button class="neu-btn btn-danger" onclick="resetSemester(${s.id})">Reset Allocations</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function createSemester() {
+            const name = document.getElementById('new-semester-name').value;
+            if (!name) return alert("Please enter a semester name");
+            
+            const res = await fetch('/api/admin/semester', {
+                method: 'POST',
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name: name })
+            });
+            
+            if (res.ok) {
+                document.getElementById('new-semester-name').value = '';
+                fetchStats();
+            } else {
+                alert("Failed to create semester");
+            }
+        }
+
+        async function togglePortal(id, isOpen) {
+            await fetch(`/api/admin/semester/${id}/toggle-portal?is_open=${isOpen}`, {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            fetchStats();
+        }
+
+        async function resetSemester(id) {
+            if (confirm("Are you sure? This will delete all student selections for this semester!")) {
+                await fetch(`/api/admin/semester/reset?semester_id=${id}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                alert('Reset successful');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/';
+        }
+
+        fetchStats();
+    </script>
+</body>
+</html>

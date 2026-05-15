@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        body { padding: 40px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .card { padding: 30px; margin-bottom: 30px; max-width: 500px; margin: 0 auto; }
+        .input-group { margin-bottom: 15px; }
+        input { width: 100%; padding: 10px; margin-top: 5px; border-radius: var(--border-radius-sm); border: none; box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light); outline: none; }
+        button { padding: 10px 20px; cursor: pointer; color: white; background: var(--primary); border: none; font-weight: bold; border-radius: var(--border-radius-sm); width: 100%; }
+        .neu-btn { box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light); transition: var(--transition); }
+        .neu-btn:active { box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>My Profile</h1>
+        <button class="neu-btn" style="width: auto;" onclick="goBack()">Back to Dashboard</button>
+    </div>
+
+    <div class="card neu">
+        <h2>Change Password</h2>
+        <div class="input-group">
+            <input type="password" id="old-pass" placeholder="Current Password">
+        </div>
+        <div class="input-group">
+            <input type="password" id="new-pass" placeholder="New Password">
+        </div>
+        <div class="input-group">
+            <input type="password" id="confirm-pass" placeholder="Confirm New Password">
+        </div>
+        <button class="neu-btn" onclick="changePassword()">Update Password</button>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/';
+
+        function goBack() {
+            window.history.back();
+        }
+
+        async function changePassword() {
+            const old_password = document.getElementById('old-pass').value;
+            const new_password = document.getElementById('new-pass').value;
+            const confirm_pass = document.getElementById('confirm-pass').value;
+
+            if (!old_password || !new_password || !confirm_pass) {
+                return alert("Please fill all fields");
+            }
+            if (new_password !== confirm_pass) {
+                return alert("New passwords do not match");
+            }
+
+            try {
+                const res = await fetch('/auth/change-password', {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`, 
+                        'Content-Type': 'application/json' 
+                    },
+                    body: JSON.stringify({ old_password, new_password })
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok) {
+                    alert(data.message);
+                    document.getElementById('old-pass').value = '';
+                    document.getElementById('new-pass').value = '';
+                    document.getElementById('confirm-pass').value = '';
+                } else {
+                    alert('Error: ' + data.detail);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    </script>
+</body>
+</html>

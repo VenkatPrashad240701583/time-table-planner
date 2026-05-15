@@ -1,77 +1,131 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Time, Boolean, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Enum as SQLEnum, DateTime
 from sqlalchemy.orm import relationship
-from app.database import Base
+from datetime import datetime
+import enum
+from .database import Base
 
+class RoleEnum(str, enum.Enum):
+    ADMIN = "ADMIN"
+    TEACHER = "TEACHER"
+    STUDENT = "STUDENT"
 
-# ---------------- USERS ----------------
 class User(Base):
     __tablename__ = "users"
-
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    email = Column(String, unique=True, nullable=False)
-    password = Column(String, nullable=False)
-    role = Column(String, nullable=False)  # admin / teacher / student
+    email = Column(String, unique=True, index=True)
+    password_hash = Column(String)
+    role = Column(SQLEnum(RoleEnum), default=RoleEnum.STUDENT)
 
+class Department(Base):
+    __tablename__ = "departments"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True)
 
-# ---------------- SUBJECTS ----------------
+class Student(Base):
+    __tablename__ = "students"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    department_id = Column(Integer, ForeignKey("departments.id"))
+    roll_number = Column(String, unique=True, index=True)
+    
+    user = relationship("User")
+    department = relationship("Department")
+
+class Teacher(Base):
+    __tablename__ = "teachers"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    department_id = Column(Integer, ForeignKey("departments.id"))
+    name = Column(String)
+    
+    user = relationship("User")
+    department = relationship("Department")
+
+class Semester(Base):
+    __tablename__ = "semesters"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    selection_start = Column(DateTime, nullable=True)
+    selection_end = Column(DateTime, nullable=True)
+    is_active = Column(Boolean, default=False)
+    is_portal_open = Column(Boolean, default=False)
+
 class Subject(Base):
     __tablename__ = "subjects"
-
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    theory_hours = Column(Integer, default=0, nullable=False)
-    lab_hours = Column(Integer, default=0, nullable=False)
+    code = Column(String, unique=True, index=True)
+    name = Column(String)
+    department_id = Column(Integer, ForeignKey("departments.id"))
+    is_lab = Column(Boolean, default=False)
 
-
-# ---------------- CLASSES ----------------
-class Class(Base):
-    __tablename__ = "classes"
-
+class StudentSubjectAllocation(Base):
+    __tablename__ = "student_subject_allocations"
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    teacher_id = Column(Integer, ForeignKey("users.id"))
+    student_id = Column(Integer, ForeignKey("students.id"))
     subject_id = Column(Integer, ForeignKey("subjects.id"))
+    semester_id = Column(Integer, ForeignKey("semesters.id"))
+    
+    student = relationship("Student")
+    subject = relationship("Subject")
+    semester = relationship("Semester")
 
-# ---------------- STUDENT ENROLLMENT ----------------
-class StudentEnrollment(Base):
-    __tablename__ = "student_enrollments"
-
+class Classroom(Base):
+    __tablename__ = "classrooms"
     id = Column(Integer, primary_key=True, index=True)
-    student_id = Column(Integer, ForeignKey("users.id"))
-    class_id = Column(Integer, ForeignKey("classes.id"))
+    room_number = Column(String, unique=True)
+    capacity = Column(Integer)
+    building = Column(String)
+    is_lab = Column(Boolean, default=False)
 
-# ---------------- TIME SLOTS ----------------
-class TimeSlot(Base):
-    __tablename__ = "timeslots"
-
+class TeacherSection(Base):
+    __tablename__ = "teacher_sections"
     id = Column(Integer, primary_key=True, index=True)
+    teacher_id = Column(Integer, ForeignKey("teachers.id"))
+    subject_id = Column(Integer, ForeignKey("subjects.id"))
+    semester_id = Column(Integer, ForeignKey("semesters.id"))
+    name = Column(String)
+    capacity = Column(Integer)
+    
+    teacher = relationship("Teacher")
+    subject = relationship("Subject")
+    timetable_slots = relationship("TimetableSlot", back_populates="section")
 
-    day = Column(String, nullable=False)  # Monday, Tuesday...
-    start_time = Column(Time, nullable=False)
-    end_time = Column(Time, nullable=False)
-    is_break = Column(Boolean, default=False)
-
-# ---------------- TIMETABLE ----------------
-class Timetable(Base):
-    __tablename__ = "timetable"
-
+class TimetableSlot(Base):
+    __tablename__ = "timetable_slots"
     id = Column(Integer, primary_key=True, index=True)
+    section_id = Column(Integer, ForeignKey("teacher_sections.id"))
+    day_of_week = Column(Integer) # 0=Monday, 6=Sunday
+    start_time = Column(String) # e.g. "08:00"
+    end_time = Column(String) # e.g. "08:50" or "09:20"
+    room_id = Column(Integer, ForeignKey("classrooms.id"))
 
-    class_id = Column(Integer, ForeignKey("classes.id"))
-    timeslot_id = Column(Integer, ForeignKey("timeslots.id"))
+    section = relationship("TeacherSection", back_populates="timetable_slots")
+    room = relationship("Classroom")
 
-    # 🔥 Prevent clashes
-    __table_args__ = (
-        UniqueConstraint("class_id", "timeslot_id", name="no_class_overlap"),
-    )
-
-
-# ---------------- TEACHER AVAILABILITY ----------------
-class TeacherAvailability(Base):
-    __tablename__ = "teacher_availability"
-
+class Enrollment(Base):
+    __tablename__ = "enrollments"
     id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id"))
+    section_id = Column(Integer, ForeignKey("teacher_sections.id"))
+    
+    student = relationship("Student")
+    section = relationship("TeacherSection")
 
-    teacher_id = Column(Integer, ForeignKey("users.id"))
-    timeslot_id = Column(Integer, ForeignKey("timeslots.id"))
+class Waitlist(Base):
+    __tablename__ = "waitlists"
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id"))
+    section_id = Column(Integer, ForeignKey("teacher_sections.id"))
+    
+    student = relationship("Student")
+    section = relationship("TeacherSection")
+    position = Column(Integer)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+
+class Notification(Base):
+    __tablename__ = "notifications"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    message = Column(String)
+    is_read = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)

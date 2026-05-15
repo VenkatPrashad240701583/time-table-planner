@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Setup</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        body { padding: 40px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .card { padding: 30px; margin-bottom: 30px; }
+        .input-group { margin-bottom: 15px; }
+        input, select { width: 100%; padding: 10px; margin-top: 5px; border-radius: var(--border-radius-sm); border: none; box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light); outline: none; }
+        button { padding: 10px 20px; cursor: pointer; color: white; background: var(--primary); border: none; font-weight: bold; border-radius: var(--border-radius-sm); }
+        .neu-btn { box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light); transition: var(--transition); }
+        .neu-btn:active { box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light); }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--shadow-dark); padding-bottom: 10px; }
+        .tab-btn { padding: 10px 20px; cursor: pointer; border: none; background: transparent; font-weight: bold; color: var(--text-light); }
+        .tab-btn.active { color: var(--primary); border-bottom: 3px solid var(--primary); margin-bottom: -13px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Entity Setup</h1>
+        <button class="neu-btn" onclick="window.location.href='/admin-dashboard'">Back to Dashboard</button>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('tab-users')">Users & Roles</button>
+        <button class="tab-btn" onclick="showTab('tab-facilities')">Departments & Rooms</button>
+        <button class="tab-btn" onclick="showTab('tab-subjects')">Subjects</button>
+        <button class="tab-btn" onclick="showTab('tab-allocations')">Sections & Allocations</button>
+    </div>
+
+    <!-- TAB 1: Users & Roles -->
+    <div id="tab-users" class="tab-content active">
+        <div class="card neu">
+            <h2>Signup Teacher</h2>
+            <div class="input-group">
+                <input type="email" id="signup-t-email" placeholder="Email Address">
+                <input type="text" id="signup-t-name" placeholder="Teacher Name">
+                <select id="signup-t-dept"><option value="">Select Department...</option></select>
+            </div>
+            <button class="neu-btn" onclick="signupTeacher()">Signup Teacher</button>
+        </div>
+
+        <div class="card neu">
+            <h2>Signup Student</h2>
+            <div class="input-group">
+                <input type="email" id="signup-s-email" placeholder="Email Address">
+                <input type="text" id="signup-s-roll" placeholder="Roll Number">
+                <select id="signup-s-dept"><option value="">Select Department...</option></select>
+            </div>
+            <button class="neu-btn" onclick="signupStudent()">Signup Student</button>
+        </div>
+
+        <div class="card neu">
+            <h2>Link User to Teacher Profile</h2>
+            <div class="input-group">
+                <select id="t-user-select"><option value="">Select User...</option></select>
+                <select id="t-user-dept"><option value="">Select Department...</option></select>
+                <input type="text" id="t-user-name" placeholder="Teacher Name">
+            </div>
+            <button class="neu-btn" onclick="linkTeacher()">Create Teacher</button>
+        </div>
+
+        <div class="card neu">
+            <h2>Link User to Student Profile</h2>
+            <div class="input-group">
+                <select id="s-user-select"><option value="">Select User...</option></select>
+                <select id="s-user-dept"><option value="">Select Department...</option></select>
+                <input type="text" id="s-user-roll" placeholder="Roll Number">
+            </div>
+            <button class="neu-btn" onclick="linkStudent()">Create Student</button>
+        </div>
+    </div>
+
+    <!-- TAB 2: Departments & Rooms -->
+    <div id="tab-facilities" class="tab-content">
+        <div class="card neu">
+            <h2>Create Department</h2>
+            <div class="input-group">
+                <input type="text" id="dept-name" placeholder="Department Name">
+            </div>
+            <button class="neu-btn" onclick="createDept()">Create</button>
+        </div>
+
+        <div class="card neu">
+            <h2>Create Classroom</h2>
+            <div class="input-group">
+                <input type="text" id="room-num" placeholder="Room Number (e.g. 101)">
+                <input type="number" id="room-cap" placeholder="Capacity (e.g. 60)">
+                <input type="text" id="room-bldg" placeholder="Building Name">
+            </div>
+            <button class="neu-btn" onclick="createClassroom()">Create</button>
+        </div>
+    </div>
+
+    <!-- TAB 3: Subjects -->
+    <div id="tab-subjects" class="tab-content">
+        <div class="card neu">
+            <h2>Create Subject</h2>
+            <div class="input-group">
+                <input type="text" id="subj-code" placeholder="Subject Code">
+                <input type="text" id="subj-name" placeholder="Subject Name">
+                <select id="subj-dept">
+                    <option value="">Select Department...</option>
+                </select>
+            </div>
+            <button class="neu-btn" onclick="createSubj()">Create</button>
+        </div>
+    </div>
+
+    <!-- TAB 4: Sections & Allocations -->
+    <div id="tab-allocations" class="tab-content">
+        <div class="card neu">
+            <h2>Create Teacher Section</h2>
+            <div class="input-group">
+                <select id="sec-teacher"><option value="">Select Teacher...</option></select>
+                <select id="sec-subject"><option value="">Select Subject...</option></select>
+                <select id="sec-semester"><option value="">Select Semester...</option></select>
+                <input type="text" id="sec-name" placeholder="Section Name (e.g. Section A)">
+                <input type="number" id="sec-cap" placeholder="Capacity (Max 60)" max="60">
+            </div>
+            <button class="neu-btn" onclick="createSection()">Create</button>
+        </div>
+
+        <div class="card neu">
+            <h2>Create Timetable Slot for Section</h2>
+            <div class="input-group">
+                <select id="slot-sec"><option value="">Select Section...</option></select>
+                <select id="slot-day">
+                    <option value="0">Monday</option>
+                    <option value="1">Tuesday</option>
+                    <option value="2">Wednesday</option>
+                    <option value="3">Thursday</option>
+                    <option value="4">Friday</option>
+                </select>
+                <input type="time" id="slot-start" placeholder="Start Time">
+                <input type="time" id="slot-end" placeholder="End Time">
+                <select id="slot-room"><option value="">Select Room...</option></select>
+            </div>
+            <button class="neu-btn" onclick="createSlot()">Create</button>
+        </div>
+
+        <div class="card neu">
+            <h2>Assign Subject to Student</h2>
+            <div class="input-group">
+                <select id="alloc-student"><option value="">Select Student...</option></select>
+                <select id="alloc-subj"><option value="">Select Subject...</option></select>
+                <select id="alloc-sem"><option value="">Select Semester...</option></select>
+            </div>
+            <button class="neu-btn" onclick="allocateSubj()">Assign Subject</button>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/';
+
+        async function loadData() {
+            const res = await fetch('/api/admin/dashboard-stats', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            
+            const deptSelect1 = document.getElementById('subj-dept');
+            const deptSelectT = document.getElementById('t-user-dept');
+            const deptSelectS = document.getElementById('s-user-dept');
+            const signupTDept = document.getElementById('signup-t-dept');
+            const signupSDept = document.getElementById('signup-s-dept');
+            
+            deptSelect1.innerHTML = '<option value="">Select Department...</option>';
+            deptSelectT.innerHTML = '<option value="">Select Department...</option>';
+            deptSelectS.innerHTML = '<option value="">Select Department...</option>';
+            signupTDept.innerHTML = '<option value="">Select Department...</option>';
+            signupSDept.innerHTML = '<option value="">Select Department...</option>';
+            
+            data.departments.forEach(d => {
+                const opt = `<option value="${d.id}">${d.name}</option>`;
+                deptSelect1.innerHTML += opt;
+                deptSelectT.innerHTML += opt;
+                deptSelectS.innerHTML += opt;
+                signupTDept.innerHTML += opt;
+                signupSDept.innerHTML += opt;
+            });
+
+            const tUserSelect = document.getElementById('t-user-select');
+            const sUserSelect = document.getElementById('s-user-select');
+            tUserSelect.innerHTML = '<option value="">Select User...</option>';
+            sUserSelect.innerHTML = '<option value="">Select User...</option>';
+            data.users.forEach(u => {
+                tUserSelect.innerHTML += `<option value="${u.id}">${u.email} (${u.role})</option>`;
+                sUserSelect.innerHTML += `<option value="${u.id}">${u.email} (${u.role})</option>`;
+            });
+
+            // Populate other dropdowns (Assuming backend returns these, we need to update admin stats endpoint)
+            const secTeacher = document.getElementById('sec-teacher');
+            secTeacher.innerHTML = '<option value="">Select Teacher...</option>';
+            data.teachers.forEach(t => secTeacher.innerHTML += `<option value="${t.id}">${t.name}</option>`);
+
+            const secSubj = document.getElementById('sec-subject');
+            const allocSubj = document.getElementById('alloc-subj');
+            secSubj.innerHTML = '<option value="">Select Subject...</option>';
+            allocSubj.innerHTML = '<option value="">Select Subject...</option>';
+            data.subjects.forEach(s => {
+                secSubj.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+                allocSubj.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+            });
+
+            const secSem = document.getElementById('sec-semester');
+            const allocSem = document.getElementById('alloc-sem');
+            secSem.innerHTML = '<option value="">Select Semester...</option>';
+            allocSem.innerHTML = '<option value="">Select Semester...</option>';
+            data.semesters.forEach(s => {
+                secSem.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+                allocSem.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+            });
+
+            const allocStudent = document.getElementById('alloc-student');
+            allocStudent.innerHTML = '<option value="">Select Student...</option>';
+            data.students.forEach(s => allocStudent.innerHTML += `<option value="${s.id}">${s.roll_number}</option>`);
+
+            const slotSec = document.getElementById('slot-sec');
+            slotSec.innerHTML = '<option value="">Select Section...</option>';
+            data.sections.forEach(s => slotSec.innerHTML += `<option value="${s.id}">${s.name}</option>`);
+
+            const slotRoom = document.getElementById('slot-room');
+            slotRoom.innerHTML = '<option value="">Select Room...</option>';
+            data.classrooms.forEach(c => slotRoom.innerHTML += `<option value="${c.id}">${c.room_number}</option>`);
+        }
+
+        async function createDept() {
+            const name = document.getElementById('dept-name').value;
+            await fetch('/api/admin/department', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+            });
+            alert('Created');
+            loadData();
+        }
+
+        async function createSubj() {
+            const code = document.getElementById('subj-code').value;
+            const name = document.getElementById('subj-name').value;
+            const dept_id = document.getElementById('subj-dept').value;
+            await fetch('/api/admin/subject', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code, name, department_id: parseInt(dept_id) })
+            });
+            alert('Created');
+        }
+
+        async function linkTeacher() {
+            const user_id = document.getElementById('t-user-select').value;
+            const dept_id = document.getElementById('t-user-dept').value;
+            const name = document.getElementById('t-user-name').value;
+            await fetch('/api/admin/teacher', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: parseInt(user_id), department_id: parseInt(dept_id), name })
+            });
+            alert('Teacher Linked');
+        }
+
+        async function linkStudent() {
+            const user_id = document.getElementById('s-user-select').value;
+            const dept_id = document.getElementById('s-user-dept').value;
+            const roll_number = document.getElementById('s-user-roll').value;
+            await fetch('/api/admin/student', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: parseInt(user_id), department_id: parseInt(dept_id), roll_number })
+            });
+            alert('Student Linked');
+        }
+
+        async function createClassroom() {
+            const room_number = document.getElementById('room-num').value;
+            const capacity = document.getElementById('room-cap').value;
+            const building = document.getElementById('room-bldg').value;
+            await fetch('/api/admin/classroom', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ room_number, capacity: parseInt(capacity), building })
+            });
+            alert('Created Classroom');
+        }
+
+        async function createSection() {
+            const teacher_id = document.getElementById('sec-teacher').value;
+            const subject_id = document.getElementById('sec-subject').value;
+            const semester_id = document.getElementById('sec-semester').value;
+            const name = document.getElementById('sec-name').value;
+            const capacity = document.getElementById('sec-cap').value;
+            await fetch('/api/admin/teacher-section', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ teacher_id: parseInt(teacher_id), subject_id: parseInt(subject_id), semester_id: parseInt(semester_id), name, capacity: parseInt(capacity) })
+            });
+            alert('Created Section');
+        }
+
+        async function createSlot() {
+            const section_id = document.getElementById('slot-sec').value;
+            const day_of_week = document.getElementById('slot-day').value;
+            const start_time = document.getElementById('slot-start').value;
+            const end_time = document.getElementById('slot-end').value;
+            const room_id = document.getElementById('slot-room').value;
+
+            await fetch('/api/admin/timetable-slot', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    section_id: parseInt(section_id), 
+                    day_of_week: parseInt(day_of_week), 
+                    start_time, 
+                    end_time, 
+                    room_id: parseInt(room_id) 
+                })
+            });
+            alert('Created Timetable Slot');
+        }
+
+        async function allocateSubj() {
+            const student_id = document.getElementById('alloc-student').value;
+            const subject_id = document.getElementById('alloc-subj').value;
+            const semester_id = document.getElementById('alloc-sem').value;
+            await fetch('/api/admin/allocation', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ student_id: parseInt(student_id), subject_id: parseInt(subject_id), semester_id: parseInt(semester_id) })
+            });
+            alert('Allocated Subject');
+        }
+
+        async function signupTeacher() {
+            const email = document.getElementById('signup-t-email').value;
+            const name = document.getElementById('signup-t-name').value;
+            const department_id = document.getElementById('signup-t-dept').value;
+            if(!email || !name || !department_id) return alert("Fill all fields");
+            
+            const res = await fetch('/api/admin/signup-teacher', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, name, department_id: parseInt(department_id) })
+            });
+            if (res.ok) {
+                alert('Teacher Created');
+                loadData();
+            } else {
+                const data = await res.json();
+                alert('Error: ' + data.detail);
+            }
+        }
+
+        async function signupStudent() {
+            const email = document.getElementById('signup-s-email').value;
+            const roll_number = document.getElementById('signup-s-roll').value;
+            const department_id = document.getElementById('signup-s-dept').value;
+            if(!email || !roll_number || !department_id) return alert("Fill all fields");
+            
+            const res = await fetch('/api/admin/signup-student', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, roll_number, department_id: parseInt(department_id) })
+            });
+            if (res.ok) {
+                alert('Student Created');
+                loadData();
+            } else {
+                const data = await res.json();
+                alert('Error: ' + data.detail);
+            }
+        }
+
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        loadData();
+    </script>
+</body>
+</html>

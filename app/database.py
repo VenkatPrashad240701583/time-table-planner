@@ -1,27 +1,23 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy import create_engine, event
+from sqlalchemy.orm import declarative_base, sessionmaker
 
-# 🔹 Change this if you switch to MySQL later
-DATABASE_URL = "sqlite:///./timetable2.db"
+SQLALCHEMY_DATABASE_URL = "sqlite:///./timetable.db"
 
-# Create engine
 engine = create_engine(
-    DATABASE_URL,
-    connect_args={"check_same_thread": False}  # needed for SQLite
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
 )
 
-# Create session (to talk to DB)
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine
-)
+@event.listens_for(engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA journal_mode=WAL")
+    cursor.execute("PRAGMA synchronous=NORMAL")
+    cursor.close()
 
-# Base class for models
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 Base = declarative_base()
 
-
-# 🔹 Dependency (use later in routes)
 def get_db():
     db = SessionLocal()
     try:

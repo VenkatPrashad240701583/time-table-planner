@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timetable Selection</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        body { padding: 40px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .grid-container { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; }
+        .card { padding: 30px; margin-bottom: 30px; }
+        .section-item { padding: 15px; border-bottom: 1px solid var(--shadow-dark); display: flex; justify-content: space-between; align-items: center; }
+        .section-info h4 { margin-bottom: 5px; }
+        .section-info p { font-size: 14px; color: var(--text-light); }
+        .badge { padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; background: var(--primary); color: white; }
+        .badge-full { background: var(--warning); color: var(--text-dark); }
+        button { padding: 8px 15px; cursor: pointer; color: white; background: var(--primary); border: none; font-weight: bold; border-radius: var(--border-radius-sm); }
+        .neu-btn { box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light); transition: var(--transition); }
+        .neu-btn:active { box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light); }
+        .btn-secondary { background: var(--text-light); }
+        #toast { position: fixed; bottom: 20px; right: 20px; padding: 15px 25px; background: var(--text-dark); color: white; border-radius: 8px; display: none; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        
+        /* Timetable Grid CSS */
+        .timetable-container { display: flex; margin-top: 20px; }
+        .time-labels { width: 60px; position: relative; border-right: 1px solid var(--shadow-dark); }
+        .time-label { position: absolute; right: 10px; font-size: 12px; color: var(--text-light); transform: translateY(-50%); }
+        .day-col { flex: 1; position: relative; border-right: 1px solid var(--shadow-dark); min-height: 540px; background: var(--surface); }
+        .day-header { text-align: center; font-weight: bold; padding: 10px 0; border-bottom: 1px solid var(--shadow-dark); background: var(--bg); position: absolute; top: -40px; width: 100%; height: 40px; }
+        .class-block { position: absolute; left: 2px; right: 2px; border-radius: 6px; padding: 4px; font-size: 11px; text-align: center; display: flex; flex-direction: column; justify-content: center; overflow: hidden; box-sizing: border-box; }
+        .class-enrolled { background: var(--primary); color: white; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); }
+        .class-view { background: rgba(108, 99, 255, 0.2); border: 2px dashed var(--primary); color: var(--text-dark); }
+        .day-wrapper { margin-top: 40px; display: flex; width: 100%; border-top: 1px solid var(--shadow-dark); border-bottom: 1px solid var(--shadow-dark); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Timetable Selection Portal</h1>
+        <button class="neu-btn btn-danger" onclick="window.location.href='/student-dashboard'">Back to Dashboard</button>
+    </div>
+
+    <div class="grid-container">
+        <div class="neu card" id="available-sections">
+            <h2>Available Sections</h2>
+            <div id="sections-list">Loading...</div>
+        </div>
+        
+        <div class="neu card" id="timetable-preview">
+            <h2>Your Schedule Preview</h2>
+            <div class="timetable-container">
+                <div class="time-labels" id="time-labels-container"></div>
+                <div class="day-wrapper" id="grid-days-container">
+                    <div class="day-col" id="day-0"><div class="day-header">Mon</div></div>
+                    <div class="day-col" id="day-1"><div class="day-header">Tue</div></div>
+                    <div class="day-col" id="day-2"><div class="day-header">Wed</div></div>
+                    <div class="day-col" id="day-3"><div class="day-header">Thu</div></div>
+                    <div class="day-col" id="day-4"><div class="day-header">Fri</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/';
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 3000);
+        }
+
+        let allSections = [];
+        let viewedSectionId = null;
+
+        function initGrid() {
+            const timeContainer = document.getElementById('time-labels-container');
+            timeContainer.innerHTML = '<div style="height:40px"></div>'; // header offset
+            for (let i = 8; i <= 17; i++) {
+                const label = document.createElement('div');
+                label.className = 'time-label';
+                label.style.top = `${(i - 8) * 60 + 40}px`;
+                label.innerText = `${i}:00`;
+                timeContainer.appendChild(label);
+            }
+        }
+
+        async function loadSections() {
+            try {
+                const res = await fetch(`/api/student/sections?_t=${Date.now()}`, {
+                    headers: { 'Authorization': `Bearer ${token}`, 'Cache-Control': 'no-cache' }
+                });
+                if (res.status === 403) {
+                    alert('Portal is closed');
+                    window.location.href = '/student-dashboard';
+                }
+                allSections = await res.json();
+                renderSections();
+                renderGrid();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function renderSections() {
+            const list = document.getElementById('sections-list');
+            list.innerHTML = '';
+            
+            if (allSections.length === 0) {
+                list.innerHTML = '<p>No sections available or subjects assigned.</p>';
+                return;
+            }
+
+            allSections.forEach(sec => {
+                const isFull = sec.enrolled >= sec.capacity;
+                const badgeClass = isFull ? 'badge-full' : '';
+                
+                let buttonsHtml = '';
+                if (sec.is_enrolled) {
+                    buttonsHtml = `<button class="neu-btn btn-danger" onclick="unenroll(${sec.id})">Discard Enrolment</button>`;
+                } else if (viewedSectionId === sec.id) {
+                    buttonsHtml = `
+                        <button class="neu-btn btn-secondary" onclick="cancelView()">Deselect</button>
+                        <button class="neu-btn" onclick="enroll(${sec.id})">${isFull ? 'Waitlist' : 'Enroll'}</button>
+                    `;
+                } else {
+                    buttonsHtml = `<button class="neu-btn" onclick="viewSection(${sec.id})">View</button>`;
+                }
+                
+                const div = document.createElement('div');
+                div.className = 'section-item';
+                div.innerHTML = `
+                    <div class="section-info">
+                        <h4>${sec.subject} - ${sec.teacher}</h4>
+                        <p>Slots: ${sec.slots.map(s => `Day ${s.day} ${s.start}-${s.end}`).join(', ')}</p>
+                    </div>
+                    <div style="text-align: right; display:flex; flex-direction:column; gap:5px; align-items:flex-end;">
+                        <span class="badge ${badgeClass}" id="badge-${sec.id}">${sec.enrolled}/${sec.capacity}</span>
+                        <div style="display:flex; gap:5px;">${buttonsHtml}</div>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function viewSection(id) {
+            viewedSectionId = id;
+            renderSections();
+            renderGrid();
+        }
+
+        function cancelView() {
+            viewedSectionId = null;
+            renderSections();
+            renderGrid();
+        }
+
+        function timeToMinutes(t) {
+            const [h, m] = t.split(':').map(Number);
+            return h * 60 + m;
+        }
+
+        function renderGrid() {
+            // clear existing blocks
+            for(let i=0; i<5; i++) {
+                const col = document.getElementById(`day-${i}`);
+                if(!col) continue;
+                // keep only the header
+                col.innerHTML = `<div class="day-header">${['Mon','Tue','Wed','Thu','Fri'][i]}</div>`;
+            }
+
+            allSections.forEach(sec => {
+                if (sec.is_enrolled || viewedSectionId === sec.id) {
+                    sec.slots.forEach(slot => {
+                        const col = document.getElementById(`day-${slot.day}`);
+                        if (!col) return;
+                        
+                        const startMin = timeToMinutes(slot.start) - 480; // 8:00 AM offset
+                        const endMin = timeToMinutes(slot.end) - 480;
+                        
+                        const block = document.createElement('div');
+                        block.className = sec.is_enrolled ? 'class-block class-enrolled' : 'class-block class-view';
+                        block.style.top = `${startMin}px`;
+                        block.style.height = `${endMin - startMin}px`;
+                        block.innerHTML = `<strong>${sec.subject}</strong><span>${slot.start}-${slot.end}</span>`;
+                        col.appendChild(block);
+                    });
+                }
+            });
+        }
+
+        async function enroll(sectionId) {
+            try {
+                const res = await fetch(`/api/student/enroll?section_id=${sectionId}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    showToast(data.message);
+                    viewedSectionId = null; // reset view
+                    loadSections(); // reload to get new is_enrolled statuses
+                } else {
+                    alert('Error: ' + data.detail);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function unenroll(sectionId) {
+            if(!confirm("Are you sure you want to discard this enrolment?")) return;
+            try {
+                const res = await fetch(`/api/student/unenroll?section_id=${sectionId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    showToast(data.message);
+                    loadSections();
+                } else {
+                    alert('Error: ' + data.detail);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Setup SSE for Real-time updates
+        const evtSource = new EventSource('/api/realtime/stream');
+        evtSource.addEventListener('update', function(e) {
+            const data = JSON.parse(e.data);
+            if (data.type === 'seat_update') {
+                const badge = document.getElementById(`badge-${data.section_id}`);
+                if (badge) {
+                    // We only have enrolled count, not capacity in the event, so we might need to fetch or extract
+                    const currentText = badge.innerText;
+                    const capacity = currentText.split('/')[1];
+                    badge.innerText = `${data.enrolled}/${capacity}`;
+                    if (data.enrolled >= parseInt(capacity)) {
+                        badge.className = 'badge badge-full';
+                        badge.nextElementSibling.nextElementSibling.innerText = 'Waitlist';
+                    }
+                }
+            }
+        });
+
+        initGrid();
+        loadSections();
+    </script>
+</body>
+</html>
