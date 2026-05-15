@@ -22,22 +22,23 @@
     </style>
 </head>
 <body>
+    <div class="page-container">
     <div class="header">
-        <h1>Entity Setup</h1>
-        <button class="neu-btn" onclick="window.location.href='/admin-dashboard'">Back to Dashboard</button>
+        <h1>🛠️ Entity Setup</h1>
+        <button class="neu-btn" onclick="window.location.href='/admin-dashboard'">🏠 Back to Dashboard</button>
     </div>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="showTab('tab-users')">Users & Roles</button>
-        <button class="tab-btn" onclick="showTab('tab-facilities')">Departments & Rooms</button>
-        <button class="tab-btn" onclick="showTab('tab-subjects')">Subjects</button>
-        <button class="tab-btn" onclick="showTab('tab-allocations')">Sections & Allocations</button>
+        <button class="tab-btn active" onclick="showTab('tab-users')">👥 Users & Roles</button>
+        <button class="tab-btn" onclick="showTab('tab-facilities')">🏢 Depts & Rooms</button>
+        <button class="tab-btn" onclick="showTab('tab-subjects')">📚 Subjects</button>
+        <button class="tab-btn" onclick="showTab('tab-allocations')">🔗 Sections & Allocations</button>
     </div>
 
     <!-- TAB 1: Users & Roles -->
     <div id="tab-users" class="tab-content active">
         <div class="card neu">
-            <h2>Signup Teacher</h2>
+            <h2>👨‍🏫 Signup Teacher</h2>
             <div class="input-group">
                 <input type="email" id="signup-t-email" placeholder="Email Address">
                 <input type="text" id="signup-t-name" placeholder="Teacher Name">
@@ -47,7 +48,7 @@
         </div>
 
         <div class="card neu">
-            <h2>Signup Student</h2>
+            <h2>👨‍🎓 Signup Student</h2>
             <div class="input-group">
                 <input type="email" id="signup-s-email" placeholder="Email Address">
                 <input type="text" id="signup-s-roll" placeholder="Roll Number">
@@ -57,7 +58,7 @@
         </div>
 
         <div class="card neu">
-            <h2>Link User to Teacher Profile</h2>
+            <h2>🔗 Link User to Teacher Profile</h2>
             <div class="input-group">
                 <select id="t-user-select"><option value="">Select User...</option></select>
                 <select id="t-user-dept"><option value="">Select Department...</option></select>
@@ -67,7 +68,7 @@
         </div>
 
         <div class="card neu">
-            <h2>Link User to Student Profile</h2>
+            <h2>🔗 Link User to Student Profile</h2>
             <div class="input-group">
                 <select id="s-user-select"><option value="">Select User...</option></select>
                 <select id="s-user-dept"><option value="">Select Department...</option></select>
@@ -80,7 +81,7 @@
     <!-- TAB 2: Departments & Rooms -->
     <div id="tab-facilities" class="tab-content">
         <div class="card neu">
-            <h2>Create Department</h2>
+            <h2>🏛️ Create Department</h2>
             <div class="input-group">
                 <input type="text" id="dept-name" placeholder="Department Name">
             </div>
@@ -88,7 +89,7 @@
         </div>
 
         <div class="card neu">
-            <h2>Create Classroom</h2>
+            <h2>🏫 Create Classroom</h2>
             <div class="input-group">
                 <input type="text" id="room-num" placeholder="Room Number (e.g. 101)">
                 <input type="number" id="room-cap" placeholder="Capacity (e.g. 60)">
@@ -101,7 +102,7 @@
     <!-- TAB 3: Subjects -->
     <div id="tab-subjects" class="tab-content">
         <div class="card neu">
-            <h2>Create Subject</h2>
+            <h2>📖 Create Subject</h2>
             <div class="input-group">
                 <input type="text" id="subj-code" placeholder="Subject Code">
                 <input type="text" id="subj-name" placeholder="Subject Name">
@@ -116,7 +117,7 @@
     <!-- TAB 4: Sections & Allocations -->
     <div id="tab-allocations" class="tab-content">
         <div class="card neu">
-            <h2>Create Teacher Section</h2>
+            <h2>📅 Create Teacher Section</h2>
             <div class="input-group">
                 <select id="sec-teacher"><option value="">Select Teacher...</option></select>
                 <select id="sec-subject"><option value="">Select Subject...</option></select>
@@ -128,7 +129,7 @@
         </div>
 
         <div class="card neu">
-            <h2>Create Timetable Slot for Section</h2>
+            <h2>⏰ Create Timetable Slot</h2>
             <div class="input-group">
                 <select id="slot-sec"><option value="">Select Section...</option></select>
                 <select id="slot-day">
@@ -146,7 +147,7 @@
         </div>
 
         <div class="card neu">
-            <h2>Assign Subject to Student</h2>
+            <h2>🎯 Assign Subject to Student</h2>
             <div class="input-group">
                 <select id="alloc-student"><option value="">Select Student...</option></select>
                 <select id="alloc-subj"><option value="">Select Subject...</option></select>
@@ -387,5 +388,6 @@
 
         loadData();
     </script>
+    </div>
 </body>
 </html>

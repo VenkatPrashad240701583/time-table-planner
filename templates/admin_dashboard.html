@@ -18,20 +18,21 @@
     </style>
 </head>
 <body>
+    <div class="page-container">
     <div class="header">
-        <h1>Admin Dashboard</h1>
+        <h1>📊 Admin Dashboard</h1>
         <div>
-            <button class="neu-btn" onclick="window.location.href='/admin-setup'">Entity Setup</button>
-            <button class="neu-btn btn-danger" onclick="logout()">Logout</button>
+            <button class="neu-btn" onclick="window.location.href='/admin-setup'">⚙️ Entity Setup</button>
+            <button class="neu-btn btn-danger" onclick="logout()">🚪 Logout</button>
         </div>
     </div>
 
     <div class="neu card">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h2>Semester Management</h2>
+            <h2>📅 Semester Management</h2>
             <div>
                 <input type="text" id="new-semester-name" placeholder="Semester Name (e.g. Fall 2026)" style="padding: 10px; border-radius: var(--border-radius-sm); border: none; box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light); outline: none;">
-                <button class="neu-btn" onclick="createSemester()">Create Semester</button>
+                <button class="neu-btn" onclick="createSemester()">➕ Create Semester</button>
             </div>
         </div>
         <table id="semesters-table">
@@ -127,5 +128,6 @@
 
         fetchStats();
     </script>
+    </div>
 </body>
 </html>

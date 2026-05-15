@@ -16,18 +16,19 @@
     </style>
 </head>
 <body>
+    <div class="page-container">
     <div class="header">
-        <h1>Student Dashboard</h1>
+        <h1>👨‍🎓 Student Dashboard</h1>
         <div>
-            <button class="neu-btn" onclick="window.location.href='/profile'" style="padding: 10px 20px; font-size:14px; margin-right: 10px;">My Profile</button>
-            <button class="neu-btn btn-danger" onclick="logout()" style="padding: 10px 20px; font-size:14px;">Logout</button>
+            <button class="neu-btn" onclick="window.location.href='/profile'" style="padding: 10px 20px; font-size:14px; margin-right: 10px;">👤 My Profile</button>
+            <button class="neu-btn btn-danger" onclick="logout()" style="padding: 10px 20px; font-size:14px;">🚪 Logout</button>
         </div>
     </div>
 
     <div class="neu card" id="portal-card">
-        <h2>Timetable Selection Portal</h2>
+        <h2>🗳️ Timetable Selection Portal</h2>
         <p id="portal-status-text">Checking status...</p>
-        <button class="neu-btn" id="enter-portal-btn" style="display: none;" onclick="window.location.href='/timetable-selection'">Enter Selection Portal</button>
+        <button class="neu-btn" id="enter-portal-btn" style="display: none;" onclick="window.location.href='/timetable-selection'">🚀 Enter Selection Portal</button>
     </div>
 
     <script>
@@ -60,5 +61,6 @@
 
         checkPortalStatus();
     </script>
+    </div>
 </body>
 </html>

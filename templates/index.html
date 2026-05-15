@@ -62,18 +62,18 @@
 <body>
     <div class="container">
         <div class="neu login-box">
-            <h2 id="form-title">Login</h2>
+            <h2 id="form-title">🔐 Login</h2>
             <form id="auth-form">
                 <div class="input-group">
-                    <label>Email</label>
-                    <input type="email" id="email" class="neu-input" required>
+                    <label>📧 Email</label>
+                    <input type="email" id="email" class="neu-input" required placeholder="name@example.com">
                 </div>
                 <div class="input-group">
-                    <label>Password</label>
-                    <input type="password" id="password" class="neu-input" required>
+                    <label>🔑 Password</label>
+                    <input type="password" id="password" class="neu-input" required placeholder="••••••••">
                 </div>
                 <div class="input-group signup-only" style="display:none;">
-                    <label>Role</label>
+                    <label>👤 Select Role</label>
                     <select id="role" class="neu-input">
                         <option value="STUDENT">Student</option>
                         <option value="TEACHER">Teacher</option>
@@ -82,7 +82,7 @@
                 </div>
                 <button type="submit" class="neu-button" id="submit-btn">Login</button>
             </form>
-            <div class="toggle-text" id="toggle-form">Don't have an account? Sign up</div>
+            <div class="toggle-text" id="toggle-form">✨ Don't have an account? Sign up</div>
         </div>
     </div>
 
@@ -91,9 +91,9 @@
         
         document.getElementById('toggle-form').addEventListener('click', () => {
             isLogin = !isLogin;
-            document.getElementById('form-title').innerText = isLogin ? 'Login' : 'Sign Up';
+            document.getElementById('form-title').innerText = isLogin ? '🔐 Login' : '🚀 Sign Up';
             document.getElementById('submit-btn').innerText = isLogin ? 'Login' : 'Sign Up';
-            document.getElementById('toggle-form').innerText = isLogin ? "Don't have an account? Sign up" : "Already have an account? Login";
+            document.getElementById('toggle-form').innerText = isLogin ? "✨ Don't have an account? Sign up" : "🔙 Already have an account? Login";
             document.querySelector('.signup-only').style.display = isLogin ? 'none' : 'block';
         });
 

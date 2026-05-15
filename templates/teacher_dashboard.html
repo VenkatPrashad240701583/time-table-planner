@@ -18,16 +18,17 @@
     </style>
 </head>
 <body>
+    <div class="page-container">
     <div class="header">
-        <h1>Teacher Dashboard</h1>
+        <h1>👨‍🏫 Teacher Dashboard</h1>
         <div>
-            <button class="neu-btn" onclick="window.location.href='/profile'" style="margin-right: 10px;">My Profile</button>
-            <button class="neu-btn btn-danger" onclick="logout()">Logout</button>
+            <button class="neu-btn" onclick="window.location.href='/profile'" style="margin-right: 10px;">👤 My Profile</button>
+            <button class="neu-btn btn-danger" onclick="logout()">🚪 Logout</button>
         </div>
     </div>
 
     <div class="neu card">
-        <h2>My Schedule</h2>
+        <h2>🗓️ My Schedule</h2>
         <table id="schedule-table">
             <thead>
                 <tr>
@@ -46,7 +47,7 @@
     </div>
 
     <div class="neu card" id="students-card" style="display: none;">
-        <h2>Enrolled Students</h2>
+        <h2>👥 Enrolled Students</h2>
         <ul id="students-list"></ul>
     </div>
 
@@ -115,5 +116,6 @@
 
         fetchSchedule();
     </script>
+    </div>
 </body>
 </html>

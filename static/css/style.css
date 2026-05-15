@@ -306,8 +306,13 @@ body {
 /*   SECTIONS & LAYOUT       */
 /* ========================= */
 
+.page-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
 .page-wrapper {
-  max-width: 1280px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 30px 24px 60px;
 }
