@@ -14,7 +14,7 @@ jobs:
       pwd
       python3 --version
 
-      APP_DIR="$HOME/fastapi-app"
+      APP_DIR="$HOME/timetable"
 
       mkdir -p $APP_DIR
 
